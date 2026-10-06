@@ -12,14 +12,10 @@ Original file is located at
 import pandas as pd
 import numpy as np
 
-orders = pd.read_csv('orders.csv')
+orders = pd.read_csv('data/orders.csv')
+customers = pd.read_csv('data/customers.csv')
+products = pd.read_csv('data/products.csv')
 orders.shape
-
-customers = pd.read_csv('customers.csv')
-customers.shape
-
-products = pd.read_csv('products.csv')
-products.shape
 
 """## Standardize payment_method casing"""
 
@@ -397,8 +393,76 @@ import os
 
 print(os.listdir("visualizations"))
 
-from google.colab import files
+import json
+import os
 
-files.download("visualizations/return_rate_by_payment.png")
-files.download("visualizations/monthly_revenue_trend.png")
+# Create narrator folder if it does not already exist
+os.makedirs("narrator", exist_ok=True)
 
+# Return rates by payment method
+return_rates = (
+    orders_clean
+    .groupby("payment_method")["returned"]
+    .mean()
+    .mul(100)
+)
+
+# Highest-risk payment + city-tier segment
+highest_risk = segment_return_rate["mean"].idxmax()
+highest_risk_rate = (
+    segment_return_rate.loc[highest_risk, "mean"] * 100
+)
+
+# True peak month after removing quantity outliers
+true_peak_month = monthly_corrected.idxmax()
+true_peak_revenue = monthly_corrected.max()
+
+# Month with the highest apparent revenue before outlier correction
+outlier_inflated_month = monthly_total.idxmax()
+outlier_inflated_revenue = monthly_total.max()
+outlier_corrected_revenue = monthly_corrected.loc[outlier_inflated_month]
+
+# Build findings from calculated analysis results
+findings = {
+    "cleaned_total_revenue_inr": round(total_order_value, 2),
+
+    "raw_total_revenue_inr": round(
+        total_order_value + dropped_value, 2
+    ),
+
+    "duplicate_reconciliation_delta_inr": round(
+        dropped_value, 2
+    ),
+
+    "return_rate_by_payment": {
+        "COD": round(return_rates["COD"], 1),
+        "CARD": round(return_rates["CARD"], 1),
+        "UPI": round(return_rates["UPI"], 1)
+    },
+
+    "highest_risk_segment": {
+        "payment_method": highest_risk[0],
+        "city_tier": int(highest_risk[1]),
+        "return_rate_pct": round(highest_risk_rate, 1)
+    },
+
+    "true_peak_month": {
+        "month": str(true_peak_month),
+        "revenue_inr": round(true_peak_revenue, 2)
+    },
+
+    "outlier_inflated_month": {
+        "month": str(outlier_inflated_month),
+        "apparent_revenue_inr": round(outlier_inflated_revenue, 2),
+        "corrected_revenue_inr": round(
+            outlier_corrected_revenue, 2
+        )
+    }
+}
+
+# Write findings.json
+with open("narrator/findings.json", "w", encoding="utf-8") as f:
+    json.dump(findings, f, indent=4)
+
+print("\nPart 3 - Task 1 completed.")
+print("findings.json created successfully.")
