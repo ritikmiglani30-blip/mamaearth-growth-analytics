@@ -1,0 +1,20 @@
+Situation
+
+The cleaned dataset shows total revenue of 97358.30 INR,
+compared with raw revenue of 99860.20 INR. The reconciliation
+difference is 2501.90 INR. Return rates are 44.4%
+for COD, 14.7% for CARD, and 18.9% for UPI.
+
+Complication
+
+The highest-risk segment is COD in city tier 2,
+with a return rate of 54.5%. The month with the highest
+apparent revenue was 2026-01, at 29582.10 INR,
+but after correcting quantity outliers it becomes 11637.10 INR.
+
+Resolution
+
+The true peak month after correcting quantity outliers is March,
+with revenue of 20318.90 INR. Regional operations and finance
+teams should use the cleaned revenue and return-rate findings when
+evaluating performance and prioritizing return-risk actions.
